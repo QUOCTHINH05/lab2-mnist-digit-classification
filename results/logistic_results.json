@@ -1,8 +1,8 @@
 {
   "model": "logistic",
   "weights": 7850,
-  "accuracy": 0.9127,
-  "precision": 0.9126,
-  "recall": 0.9127,
-  "f1_score": 0.9124
+  "accuracy": 0.897,
+  "precision": 0.8969,
+  "recall": 0.897,
+  "f1_score": 0.8966
 }

@@ -20,14 +20,17 @@ class MNISTClassifier(abc.ABC):
     def train(self, x_train: np.ndarray, y_train: np.ndarray,
               epochs: int = 10, batch_size: int = 128,
               validation_split: float = 0.1) -> tf.keras.callbacks.History:
-        """Train the model on the given data.
+        """Train the model on the given data."""
 
-        TODO: Implement this method.
-        - If self.model is None, call self.build_model() to create it.
-        - Use the model's fit() method with the provided parameters.
-        - Return the History object from fit().
-        """
-        raise NotImplementedError
+        if self.model is None: 
+            self.model = self.build_model()
+        history = self.model.fit(
+            x_train, y_train,
+            epochs=epochs,
+            batch_size=batch_size,
+            validation_split=validation_split
+        )
+        return history
 
     def evaluate(self, x_test: np.ndarray, y_test: np.ndarray) -> dict:
         """Evaluate the model on the test data.
@@ -38,7 +41,12 @@ class MNISTClassifier(abc.ABC):
         - Use the model's predict() method and np.argmax to get predicted labels.
         - Return a dict with keys: "loss", "accuracy", "y_pred".
         """
-        raise NotImplementedError
+        if self.model is None:
+            raise RuntimeError("Model has not been built or trained yet.")
+        evaluation = self.model.evaluate(x_test, y_test, verbose=0)
+        y_pred = self.model.predict(x_test)
+        y_pred = np.argmax(y_pred, axis=1)
+        return {"loss": evaluation[0], "accuracy": evaluation[1], "y_pred": y_pred}
 
     def save(self, path: str) -> None:
         """Save the model to the given file path.
@@ -47,7 +55,9 @@ class MNISTClassifier(abc.ABC):
         - Raise RuntimeError if self.model is None.
         - Use the model's save() method.
         """
-        raise NotImplementedError
+        if self.model is None:
+            raise RuntimeError("Model has not been built or trained yet.")
+        self.model.save(path)
 
     def load(self, path: str) -> None:
         """Load a model from the given file path.
@@ -55,7 +65,7 @@ class MNISTClassifier(abc.ABC):
         TODO: Implement this method.
         - Use tf.keras.models.load_model() and assign to self.model.
         """
-        raise NotImplementedError
+        self.model = tf.keras.models.load_model(path)
 
 
 class LogisticRegressionClassifier(MNISTClassifier):
@@ -72,7 +82,12 @@ class LogisticRegressionClassifier(MNISTClassifier):
           and metrics=["accuracy"].
         - Return the compiled model.
         """
-        raise NotImplementedError
+        model = tf.keras.Sequential([
+            tf.keras.layers.Input(shape=(784,)),
+            tf.keras.layers.Dense(10, activation="softmax")
+        ])
+        model.compile(optimizer="sgd", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
+        return model
 
 
 class NeuralNetworkClassifier(MNISTClassifier):
@@ -91,4 +106,11 @@ class NeuralNetworkClassifier(MNISTClassifier):
           and metrics=["accuracy"].
         - Return the compiled model.
         """
-        raise NotImplementedError
+        model = tf.keras.Sequential([
+            tf.keras.layers.Input(shape=(784,)),
+            tf.keras.layers.Dense(128, activation="relu"),
+            tf.keras.layers.Dense(64, activation="relu"),
+            tf.keras.layers.Dense(10, activation="softmax")
+        ])
+        model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
+        return model

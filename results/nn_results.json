@@ -1,0 +1,8 @@
+{
+  "model": "nn",
+  "weights": 109386,
+  "accuracy": 0.9773,
+  "precision": 0.9775,
+  "recall": 0.9773,
+  "f1_score": 0.9773
+}
